@@ -5,6 +5,9 @@ Devemos encontrar a inversa de uma matriz, utilizando fatoracao LU.
 Uma boa fonte para entender o processo de fatoracao eh o video deste link:
 https://www.youtube.com/watch?v=dza5JTvMpzk&fref=gc&dti=352699571413581
 
+A especificacao dada pelo professor se encontra em:
+http://www.inf.ufpr.br/kunzle/disciplinas/ci164/2017-2/ci164-2017-2-trabalho.html
+
 *Importante: algumas matrizes nao tem inversa, devemos testar e dar uma mensagem de erro
 para matrizes deste tipo, em caso de erros, uma mensagem explicando o ocorrido deve ser impressa em stderr e a execução do programa deve ser encerrada com código diferente de 0.* 
 
