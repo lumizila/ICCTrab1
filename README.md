@@ -25,5 +25,6 @@ else
   imprime_matriz(Inversa, tempo_LU, tempo_iter, tempo_residuo);
   desaloca_matriz(M);
   desaloca_matriz(L);
-  desaloca_matriz(U);```
+  desaloca_matriz(U);
+```
   
