@@ -10,6 +10,7 @@ para matrizes deste tipo, em caso de erros, uma mensagem explicando o ocorrido d
 
 Um pseudo codigo para o programa:
 
+```
 M = incia_matriz() // pode ser randomica ou vir de um arquivo de entrada
 if(!testa_inversivel(M))
   print("esta matriz nao eh inversivel")
@@ -24,4 +25,5 @@ else
   imprime_matriz(Inversa, tempo_LU, tempo_iter, tempo_residuo);
   desaloca_matriz(M);
   desaloca_matriz(L);
-  desaloca_matriz(U);
+  desaloca_matriz(U);```
+  
