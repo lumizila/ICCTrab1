@@ -2,6 +2,14 @@
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
+#include <time.h>
+
+///funcao dada pelo professor para capturar o tempo
+double timestamp(void){
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	return((double)(tp.tv_sec*1000.0 + tp.tv_usec/1000.0));
+}
 
 ///funcao dada pelo professor para gerar matriz eleatoria
 double *generateSquareRandomMatrix( unsigned int n )
@@ -68,7 +76,8 @@ void imprimeMatriz(double *mat, unsigned int n){
 double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 	//se no metodo de gauss a matriz restante tiver uma linha que tem apenas 0,
 	//entao a matriz nao eh inversivel
-
+	///capturando o tempo inicial
+	double tempo_inicial = timestamp();
 	///inicializando a matriz L e a matriz U
 	for(int i = 0; i < tamanho; i++){
 		for(int j = 0; j < tamanho; j ++){
@@ -84,6 +93,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 	int pivo;
 	int linha;
 	int coluna;
+
 	///este for faz iterar para cada coluna
 	for(int i = 1; i < tamanho; i++){
 		pivo = i-1;
@@ -96,6 +106,8 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 			//TODO: Se o pivo for 0, tenho que tentar trocar as linhas
 			//para poder fazer a divisao abaixo:
 			//Se nao ela vai dar NaN
+			//se nao encontrar nenhuma linha pra trocar entao essa matriz nao eh inversivel?
+			//TODO: Confirmar isso com o professor
 			double fator = U[linha+coluna]/U[tamanho*pivo+pivo];
 			L[linha+coluna] = fator;
 			///este for faz a subtracao para cada el da linha
@@ -106,7 +118,95 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 	}
 	//TODO: testar se a matriz U ficou com alguma linha que eh apenas 0,
 	// entao a matriz nao eh inversivel e devemos sair do programa
-	return 0;
+	//confirmar isso com o professor
+
+	///capturando variacao de tempo
+	tempo_inicial = timestamp() - tempo_inicial;
+	return tempo_inicial;
+}
+
+double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho){
+	///capturando o tempo inicial
+	double tempo_inicial = timestamp();
+
+	double *identidade = NULL;
+	if ( ! (identidade = (double *) malloc(tamanho*tamanho*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz identidade, terminando o programa.\n");
+		exit(0);
+	}
+
+	///gerando a matriz identidade
+	for(int i = 0; i < tamanho; i++){
+		for(int j = 0; j < tamanho; j ++){
+			identidade[(i*tamanho) + j] = 0;
+			if(i == j){
+				identidade[(i*tamanho) + j] = 1;
+			}
+		}
+	}
+
+	///agora que temos a matriz identidade, a L e a U
+	///de forma que matriz*inversa = identidade, eh possivel
+	///calcular a inversa coluna por coluna na forma:
+	///matriz*inversa[coluna x] = identidade[coluna x]
+	///assim temos que Ax=b e A=LU, portanto L(Ux) = b, Ly = b e Ux = y
+
+	///criando o vetor y para salvar as informacoes
+	double y[tamanho];
+	double x[tamanho];
+
+	double multi;
+
+	///este for eh para cada coluna da identidade
+	for(int i = 0; i < tamanho; i++){
+		///inicializando o vetor y e o vetor x
+		for(int m = 0; m < tamanho; m++){
+			y[m] = 0;
+			x[m] = 0;
+		}
+
+		///Ly = b
+
+		///este for eh para cada linha de y
+		///faz-se a substituicao 
+		for(int j = 0; j < tamanho; j++){
+				///este for opera a multiplicacao entre a matriz L e o vetor y
+				multi = 0;
+				for(int k = 0; k < j; k++){
+					multi = multi + L[tamanho*j+k]*y[k];
+				}
+				
+				//y[j] = identidade[tamanho*j+i]/L[tamanho*j+j]
+				//y[j] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]))/L[tamamnho*j+j]
+				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
+ 				//...
+
+				y[j] = (identidade[tamanho*j+i] - multi) / L[tamanho*j+j];
+		}
+
+		///Ux = y
+
+		///agora que tenho o valor de y referente a coluna i da identidade,
+		///eh possivel calcular o vetor x referente a coluna i da identidade
+		///com retrosubstituicao
+
+		///para cada linha de x, comecando de baixo pra cima
+		for(int j = (tamanho-1); j >= 0; j--){
+			///este for opera a multiplicacao entre U e x
+			multi = 0;
+			for(int k = (tamanho-1); k > j; k--){
+				multi = multi + U[tamanho*j+k]*x[k];
+			}
+			x[j] = (y[j] - multi) / U[tamanho*j+j]; 
+
+			///colocando os resultados de x na matriz inversa
+			Inversa[tamanho*j+i] = x[j];
+		}
+	}
+
+	///capturando variacao de tempo
+	tempo_inicial = timestamp() - tempo_inicial;
+	return tempo_inicial;
 }
 
 ///INICIO DO PROGRAMA PRINCIPAL
@@ -157,7 +257,8 @@ for(int i =0; i < argc; i++){
 		eh_randomica = true;
 		tamanho_matriz = atoi(argv[i+1]);
 		matriz = generateSquareRandomMatrix(tamanho_matriz);
-		imprimeMatriz(matriz, tamanho_matriz);
+		//TODO: descomentar a linha de baixo para ver a matriz eleatoria criada
+		//imprimeMatriz(matriz, tamanho_matriz);
 	}
 	else if(strcmp(argv[i], "-it") == 0){
 		///numero de iteracoes do refinamento
@@ -176,7 +277,6 @@ if(!tem_iteracoes){
 ///lendo a matriz do arquivo de entrada
 if(tem_entrada && (!eh_randomica)){
 	matriz = leMatriz(entrada, &tamanho_matriz);
-	imprimeMatriz(matriz, tamanho_matriz);
 }
 
 ///fazendo a fatoracao L U
@@ -198,9 +298,21 @@ if(tempo_LU == -1){
 	exit(1);
 }
 
-//double tempo_iter = retrosubstituicao();
+double *Inversa = NULL;
+if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+	printf("Erro: afalha na alocacao da matriz U, terminando o programa.\n");
+	exit(0);
+}
 
+double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
 
+//TODO: refinamento 
+
+///arrumar as informacoes de tempo para printar no final
+///TODO: arrumar o print da inversa de acordo com a especificacao
+imprimeMatriz(Inversa, tamanho_matriz);
+
+///TODO: arrumar os comentarios em formato doxygen como o professor quer
 if(entrada != NULL){
 	fclose(entrada);
 }

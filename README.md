@@ -30,4 +30,7 @@ else
   desaloca_matriz(L);
   desaloca_matriz(U);
 ```
-  
+
+Para usar o wolfran alpha para calcular a inversa e checar o codigo usar o formato:
+
+inv {{10, -9, -12}, {7, -12, 11}, {-10, 10, 3}}
