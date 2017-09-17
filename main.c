@@ -27,7 +27,6 @@ double *generateSquareRandomMatrix( unsigned int n )
 
 ///funcao para ler a matriz de um arquivo de entrada
 double *leMatriz(FILE *entrada, unsigned int *tamanho){
-
 	double *mat = NULL;
 	//recuperando o tamanho da matriz
 	char buff[10];
@@ -63,6 +62,51 @@ void imprimeMatriz(double *mat, unsigned int n){
 			printf("\n");
 		}
 	}
+}
+
+///funcao para fazer a fatoracao LU da matriz
+double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
+	//se no metodo de gauss a matriz restante tiver uma linha que tem apenas 0,
+	//entao a matriz nao eh inversivel
+
+	///inicializando a matriz L e a matriz U
+	for(int i = 0; i < tamanho; i++){
+		for(int j = 0; j < tamanho; j ++){
+			U[(i*tamanho) + j] = matriz[(i*tamanho) + j];
+			L[(i*tamanho) + j] = 0;
+			if(i == j){
+				L[(i*tamanho) + j] = 1;
+			}
+		}
+	}
+
+	///APLICANDO METODO DE GAUSS EM U
+	int pivo;
+	int linha;
+	int coluna;
+	///este for faz iterar para cada coluna
+	for(int i = 1; i < tamanho; i++){
+		pivo = i-1;
+		coluna = i-1;
+		///este for faz iterar para cada linha
+		for(int k = i; k < tamanho; k++){
+			linha = k*tamanho;
+			///obtendo o fator para multiplicar a linha anterior e subtrair da 
+			///linha atual
+			//TODO: Se o pivo for 0, tenho que tentar trocar as linhas
+			//para poder fazer a divisao abaixo:
+			//Se nao ela vai dar NaN
+			double fator = U[linha+coluna]/U[tamanho*pivo+pivo];
+			L[linha+coluna] = fator;
+			///este for faz a subtracao para cada el da linha
+			for(int j = 0; j < tamanho; j++){
+				U[linha+j] = U[linha+j]-(U[tamanho*pivo+j]*fator);
+			}
+		}
+	}
+	//TODO: testar se a matriz U ficou com alguma linha que eh apenas 0,
+	// entao a matriz nao eh inversivel e devemos sair do programa
+	return 0;
 }
 
 ///INICIO DO PROGRAMA PRINCIPAL
@@ -134,6 +178,28 @@ if(tem_entrada && (!eh_randomica)){
 	matriz = leMatriz(entrada, &tamanho_matriz);
 	imprimeMatriz(matriz, tamanho_matriz);
 }
+
+///fazendo a fatoracao L U
+double *L = NULL;
+double *U = NULL;
+if ( ! (L = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+	printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
+	exit(0);
+}
+if ( ! (U = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+	printf("Erro: afalha na alocacao da matriz U, terminando o programa.\n");
+	exit(0);
+}
+
+double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz);
+///testa se inversivel
+if(tempo_LU == -1){
+	printf("Erro: a matriz nao eh inversivel");
+	exit(1);
+}
+
+//double tempo_iter = retrosubstituicao();
+
 
 if(entrada != NULL){
 	fclose(entrada);

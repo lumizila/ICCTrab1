@@ -5,4 +5,4 @@ doc: # ainda nao entendi como fazer essa opcao
 
 
 clean:
-	rm *.o; rm invmat
+	rm invmat
