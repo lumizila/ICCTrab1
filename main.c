@@ -101,13 +101,17 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 		///este for faz iterar para cada linha
 		for(int k = i; k < tamanho; k++){
 			linha = k*tamanho;
-			///obtendo o fator para multiplicar a linha anterior e subtrair da 
-			///linha atual
-			//TODO: Se o pivo for 0, tenho que tentar trocar as linhas
-			//para poder fazer a divisao abaixo:
-			//Se nao ela vai dar NaN
+			//Se o pivo for 0, tenho que tentar trocar a linha do pivo com alguma abaixo dela
 			//se nao encontrar nenhuma linha pra trocar entao essa matriz nao eh inversivel?
 			//TODO: Confirmar isso com o professor
+			//if(U[tamanho*pivo+pivo] == 0){
+				//verifica todas as linhas abaixo do pivo para alguma linha que tenha
+				//um elemento diferente de 0 na posicao do pivo. 
+				//dai se tiver, eu troco de linhas na matriz U, na matriz L e na matriz identidade tbm ??
+
+			//}
+			///obtendo o fator para multiplicar a linha anterior e subtrair da 
+			///linha atual 
 			double fator = U[linha+coluna]/U[tamanho*pivo+pivo];
 			L[linha+coluna] = fator;
 			///este for faz a subtracao para cada el da linha
@@ -116,9 +120,23 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 			}
 		}
 	}
-	//TODO: testar se a matriz U ficou com alguma linha que eh apenas 0,
-	// entao a matriz nao eh inversivel e devemos sair do programa
-	//confirmar isso com o professor
+
+	///testando se a matriz U ficou com alguma linha que eh apenas 0,
+	///entao a matriz nao eh inversivel e devemos sair do programa
+	bool linha_nula = true;
+	for(int linha = 0; linha < tamanho; linha++){
+		linha_nula = true;
+		for(int coluna = 0; coluna < tamanho; coluna++){
+			if(U[linha*tamanho+coluna] != 0){
+				linha_nula = false;
+			}
+		}
+		///se a boolean que indica se a linha eh nula tem valor verdadeiro
+		///significa que a matriz na eh inversivel
+		if(linha_nula){
+			return -1;
+		}
+	}
 
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
@@ -204,6 +222,16 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		}
 	}
 
+	///capturando variacao de tempo
+	tempo_inicial = timestamp() - tempo_inicial;
+	return tempo_inicial;
+}
+
+double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz, int iteracoes){
+	///capturando o tempo inicial
+	double tempo_inicial = timestamp();
+	
+	
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
 	return tempo_inicial;
@@ -307,6 +335,7 @@ if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double)
 double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
 
 //TODO: refinamento 
+double tempo_residuo = refinamento(matriz, Inversa, tamanho_matriz, iteracoes);
 
 ///arrumar as informacoes de tempo para printar no final
 ///TODO: arrumar o print da inversa de acordo com a especificacao
