@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
-#include <time.h>
+#include<time.h>
 
 ///funcao dada pelo professor para capturar o tempo
 double timestamp(void){
@@ -59,8 +59,12 @@ double *leMatriz(FILE *entrada, unsigned int *tamanho){
 	return mat;
 }
 
-///funcao para imprimir a matriz
-void imprimeMatriz(double *mat, unsigned int n){
+///funcao para imprimir a matriz no stdout
+void imprimeMatriz(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo){
+
+	///imprimindo os tempos	e tamanho da matriz
+	printf("# Tempo LU: %f\n# Tempo iter: %f\n# Tempo residuo: %f\n#\n%d\n", tempo_LU, tempo_iter, tempo_residuo, n);
+ 
 	unsigned int iterador = 0;
 	unsigned int fim =  n*n;
 	while( iterador != fim ) {
@@ -68,6 +72,24 @@ void imprimeMatriz(double *mat, unsigned int n){
 		iterador++;
 		if((iterador%n) == 0){
 			printf("\n");
+		}
+	}
+}
+
+///funcao para imprimir a matriz em um arquivo
+void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo, FILE *saida);
+
+	///imprimindo os tempos	e tamanho da matriz
+	fprintf(saida, "sdlka");
+	fprintf(saida, "# Tempo LU: %f\n# Tempo iter: %f\n# Tempo residuo: %f\n#\n%d\n", tempo_LU, tempo_iter, tempo_residuo, n);
+
+	unsigned int iterador = 0;
+	unsigned int fim =  n*n;
+	while( iterador != fim ) {
+		fprintf(saida, "%f ", mat[iterador]);
+		iterador++;
+		if((iterador%n) == 0){
+			fprintf(saida, "\n");
 		}
 	}
 }
@@ -227,14 +249,17 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 	return tempo_inicial;
 }
 
-double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz, int iteracoes){
-	///capturando o tempo inicial
-	double tempo_inicial = timestamp();
+double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz, int iteracoes, double *tempo_iter, bool tem_saida, FILE *saida){
+	///tempo medio para calcular a norma do residuo
+	double tempo_medio;
 	
-	
-	///capturando variacao de tempo
-	tempo_inicial = timestamp() - tempo_inicial;
-	return tempo_inicial;
+	///TODO FAZER O REFINAMENTO AQUI
+	///Para o refinamento temos que: matriz*Inversa Alterada(iter x) = Identidade Alterada(iter x)
+	///Entao, para cada coluna da Inversa e da Identidade é preciso fazer um refinamento 
+	///
+	///TODO Inclui o tempo de somar o resultado do refinamento à solução original no tempo_iter
+
+	return tempo_medio;
 }
 
 ///INICIO DO PROGRAMA PRINCIPAL
@@ -285,7 +310,7 @@ for(int i =0; i < argc; i++){
 		eh_randomica = true;
 		tamanho_matriz = atoi(argv[i+1]);
 		matriz = generateSquareRandomMatrix(tamanho_matriz);
-		//TODO: descomentar a linha de baixo para ver a matriz eleatoria criada
+		//descomentar a linha de baixo para ver a matriz eleatoria criada
 		//imprimeMatriz(matriz, tamanho_matriz);
 	}
 	else if(strcmp(argv[i], "-it") == 0){
@@ -334,14 +359,20 @@ if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double)
 
 double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
 
-//TODO: refinamento 
-double tempo_residuo = refinamento(matriz, Inversa, tamanho_matriz, iteracoes);
+///chamando a funcao de refinamento 
+double tempo_residuo = refinamento(matriz, Inversa, tamanho_matriz, iteracoes, &tempo_iter, tem_saida, saida);
 
-///arrumar as informacoes de tempo para printar no final
-///TODO: arrumar o print da inversa de acordo com a especificacao
-imprimeMatriz(Inversa, tamanho_matriz);
+///TODO: testar se os prints estao de acordo com a especificacao
+if(tem_saida){
+	imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
+}
+else{
+	imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
+}
 
 ///TODO: arrumar os comentarios em formato doxygen como o professor quer
+
+///fechando os arquivos 
 if(entrada != NULL){
 	fclose(entrada);
 }
