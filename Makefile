@@ -5,4 +5,4 @@ doc:
 	cd doc; doxygen; cd ..
 
 clean:
-	rm invmat
+	rm invmat; rm -r "doc/html"

@@ -112,33 +112,30 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 	}
 
 	///APLICANDO METODO DE GAUSS EM U
-	int pivo;
+	int pivo_posicao;
+	double pivo;
 	int linha;
 	int coluna;
 
 	///este for faz iterar para cada coluna
 	for(int i = 1; i < tamanho; i++){
-		pivo = i-1;
+		pivo_posicao = i-1;
 		coluna = i-1;
+		pivo = U[tamanho*pivo_posicao+pivo_posicao];
+		///testando se o pivo corrente eh igual a 0, se sim, a matriz nao eh inversivel
+		if(pivo == 0){
+			return -1;
+		}
 		///este for faz iterar para cada linha
 		for(int k = i; k < tamanho; k++){
 			linha = k*tamanho;
-			//Se o pivo for 0, tenho que tentar trocar a linha do pivo com alguma abaixo dela
-			//se nao encontrar nenhuma linha pra trocar entao essa matriz nao eh inversivel?
-			//TODO: Confirmar isso com o professor
-			//if(U[tamanho*pivo+pivo] == 0){
-				//verifica todas as linhas abaixo do pivo para alguma linha que tenha
-				//um elemento diferente de 0 na posicao do pivo. 
-				//dai se tiver, eu troco de linhas na matriz U, na matriz L e na matriz identidade tbm ??
-
-			//}
 			///obtendo o fator para multiplicar a linha anterior e subtrair da 
 			///linha atual 
-			double fator = U[linha+coluna]/U[tamanho*pivo+pivo];
+			double fator = U[linha+coluna]/pivo;
 			L[linha+coluna] = fator;
 			///este for faz a subtracao para cada el da linha
 			for(int j = 0; j < tamanho; j++){
-				U[linha+j] = U[linha+j]-(U[tamanho*pivo+j]*fator);
+				U[linha+j] = U[linha+j]-(U[tamanho*pivo_posicao+j]*fator);
 			}
 		}
 	}
@@ -302,7 +299,7 @@ double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz,
 		}
 	}
 
-	imprimeMatriz(R, tamanho_matriz, 0, 0, 0);
+	//imprimeMatriz(R, tamanho_matriz, 0, 0, 0);
 
 	///calcular norma de R
 	///imprimir a norma de R na iteração
@@ -343,8 +340,7 @@ double *matriz = NULL;
 ///esse for localiza os parametros passados para o argv 
 ///e faz as operacoes devidas de acordo com o parametro;
 for(int i =0; i < argc; i++){
-	//TODO: Ver com o professor pq tem duas opcoes -i
-	if(strcmp(argv[i], "-i") == 0){
+	if(strcmp(argv[i], "-e") == 0){
 		///ler arquivo de entrada
 		tem_entrada = true;
 		entrada = fopen(argv[i+1], "r");
@@ -368,7 +364,7 @@ for(int i =0; i < argc; i++){
 		//descomentar a linha de baixo para ver a matriz eleatoria criada
 		//imprimeMatriz(matriz, tamanho_matriz);
 	}
-	else if(strcmp(argv[i], "-it") == 0){
+	else if(strcmp(argv[i], "-i") == 0){
 		///numero de iteracoes do refinamento
 		tem_iteracoes = true;
 		iteracoes = atoi(argv[i+1]);
@@ -378,7 +374,7 @@ for(int i =0; i < argc; i++){
 ///checando o parametro obrigatorio
 if(!tem_iteracoes){
 	printf("Erro: O parametro -i k eh obrigatorio\n");
-	printf("O formato da chamada eh:\ninvmat [-i arquivo_entrada] [-o arquivo_saida] [-r N] -i k\n");
+	printf("O formato da chamada eh:\ninvmat [-e arquivo_entrada] [-o arquivo_saida] [-r N] -i k\n");
 	exit(0);
 }
 
@@ -402,7 +398,7 @@ if ( ! (U = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
 double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz);
 ///testa se inversivel
 if(tempo_LU == -1){
-	printf("Erro: a matriz nao eh inversivel");
+	printf("Erro: a matriz nao eh inversivel\n");
 	exit(1);
 }
 
