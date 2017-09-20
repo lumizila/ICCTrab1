@@ -4,8 +4,6 @@
 #include<stdbool.h>
 #include<time.h>
 
-/*OIIIIIIIIII*/
-
 ///funcao dada pelo professor para capturar o tempo
 double timestamp(void){
 	struct timeval tp;
@@ -252,9 +250,64 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 }
 
 double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz, int iteracoes, double *tempo_iter, bool tem_saida, FILE *saida){
+	int soma;
 	///tempo medio para calcular a norma do residuo
 	double tempo_medio;
-	
+	///R = I - A*inv(A)
+	double *R = NULL;
+	///I_aprox = matriz * Inversa
+	double *I_aprox = NULL;
+	double *identidade = NULL;
+
+	if ( ! (identidade = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz identidade, terminando o programa.\n");
+		exit(0);
+	}
+
+	if (!(R = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ) {
+		printf("Erro: afalha na alocacao da matriz R, terminando o programa.\n");
+		exit(0);
+	}
+
+	if (!(I_aprox = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ) {
+		printf("Erro: afalha na alocacao da matriz I_aprox, terminando o programa.\n");
+		exit(0);
+	}
+
+	///calculando I_aprox
+	for(int i = 0; i < tamanho_matriz; i++) {
+		for(int j = 0; j < tamanho_matriz; j++) {		
+		    soma = 0;
+		    for(int k = 0; k < tamanho_matriz; k++) {
+				soma = soma + matriz[(i*tamanho_matriz) + k] * Inversa[(k*tamanho_matriz) + j];
+		    }
+			I_aprox[(i*tamanho_matriz) + j] = soma;
+		}
+	}
+
+	///gerando a matriz identidade
+	for(int i = 0; i < tamanho_matriz; i++){
+		for(int j = 0; j < tamanho_matriz; j ++){
+			identidade[(i*tamanho_matriz) + j] = 0;
+			if(i == j){
+				identidade[(i*tamanho_matriz) + j] = 1;
+			}
+		}
+	}
+
+	///calculando R
+	for(int i = 0; i < tamanho_matriz; i++){
+		for(int j = 0; j < tamanho_matriz; j++){
+			R[(i*tamanho_matriz) + j] = identidade[(i*tamanho_matriz) + j] - I_aprox[(i*tamanho_matriz) + j];
+		}
+	}
+
+	imprimeMatriz(R, tamanho_matriz, 0, 0, 0);
+
+	///calcular norma de R
+	///imprimir a norma de R na iteração
+	///
+
 	///TODO FAZER O REFINAMENTO AQUI
 	///Para o refinamento temos que: matriz*Inversa Alterada(iter x) = Identidade Alterada(iter x)
 	///Entao, para cada coluna da Inversa e da Identidade é preciso fazer um refinamento 
@@ -355,7 +408,7 @@ if(tempo_LU == -1){
 
 double *Inversa = NULL;
 if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
-	printf("Erro: afalha na alocacao da matriz U, terminando o programa.\n");
+	printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
 	exit(0);
 }
 
