@@ -4,6 +4,8 @@
 #include<stdbool.h>
 #include<time.h>
 
+/*OIIIIIIIIII*/
+
 ///funcao dada pelo professor para capturar o tempo
 double timestamp(void){
 	struct timeval tp;
