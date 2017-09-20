@@ -77,7 +77,7 @@ void imprimeMatriz(double *mat, unsigned int n, double tempo_LU, double tempo_it
 }
 
 ///funcao para imprimir a matriz em um arquivo
-void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo, FILE *saida);
+void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo, FILE *saida){
 
 	///imprimindo os tempos	e tamanho da matriz
 	fprintf(saida, "sdlka");
@@ -370,7 +370,7 @@ else{
 	imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
 }
 
-///TODO: arrumar os comentarios em formato doxygen como o professor quer
+///TODO: arrumar o Makefile para rodar o doxygen
 
 ///fechando os arquivos 
 if(entrada != NULL){

@@ -1,8 +1,8 @@
 all: main.c
 	gcc main.c -o invmat
 
-doc: # ainda nao entendi como fazer essa opcao
-
+doc: 
+	cd doc; doxygen; cd ..
 
 clean:
 	rm invmat
