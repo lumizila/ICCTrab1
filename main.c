@@ -1,19 +1,19 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<stdbool.h>
-#include<time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <time.h>
+#include <math.h>
 
 ///funcao dada pelo professor para capturar o tempo
-double timestamp(void){
+double timestamp(void) {
 	struct timeval tp;
 	gettimeofday(&tp, NULL);
 	return((double)(tp.tv_sec*1000.0 + tp.tv_usec/1000.0));
 }
 
 ///funcao dada pelo professor para gerar matriz eleatoria
-double *generateSquareRandomMatrix( unsigned int n )
-{
+double *generateSquareRandomMatrix( unsigned int n ) {
 	double *mat = NULL;
 
 	/* return NULL if memory allocation fails */
@@ -34,7 +34,7 @@ double *generateSquareRandomMatrix( unsigned int n )
 }
 
 ///funcao para ler a matriz de um arquivo de entrada
-double *leMatriz(FILE *entrada, unsigned int *tamanho){
+double *leMatriz(FILE *entrada, unsigned int *tamanho) {
 	double *mat = NULL;
 	//recuperando o tamanho da matriz
 	char buff[10];
@@ -46,8 +46,8 @@ double *leMatriz(FILE *entrada, unsigned int *tamanho){
 		printf("Erro: afalha na alocacao da matriz, terminando o programa.\n");
 		exit(0);
 	}
-	
-	unsigned int count = 0; 
+
+	unsigned int count = 0;
 	fscanf(entrada, "%s", buff);
 	while(count != (*tamanho**tamanho) && !feof(entrada)){
 		double el = atoi(buff);
@@ -59,16 +59,34 @@ double *leMatriz(FILE *entrada, unsigned int *tamanho){
 	return mat;
 }
 
+///funcao para ler matriz do stdin
+double *leMatrizStdin(unsigned int *tamanho) {
+	double *mat = NULL;
+
+	scanf("%u", tamanho);
+
+	///termina programa se alocacao falha
+	if ( !(mat = (double *) malloc(*tamanho**tamanho*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz, terminando o programa.\n");
+		exit(0);
+	}
+
+	for(int i = 0; i < (*tamanho**tamanho); i++) {
+		scanf("%lf", &mat[i]);
+	}
+	return mat;
+}
+
 ///funcao para imprimir a matriz no stdout
-void imprimeMatriz(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo){
+void imprimeMatriz(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo) {
 
 	///imprimindo os tempos	e tamanho da matriz
 	printf("# Tempo LU: %f\n# Tempo iter: %f\n# Tempo residuo: %f\n#\n%d\n", tempo_LU, tempo_iter, tempo_residuo, n);
- 
+
 	unsigned int iterador = 0;
 	unsigned int fim =  n*n;
 	while( iterador != fim ) {
-		printf("%f ", mat[iterador]);
+		printf("%.17g ", mat[iterador]);
 		iterador++;
 		if((iterador%n) == 0){
 			printf("\n");
@@ -77,16 +95,15 @@ void imprimeMatriz(double *mat, unsigned int n, double tempo_LU, double tempo_it
 }
 
 ///funcao para imprimir a matriz em um arquivo
-void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo, FILE *saida){
+void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double tempo_iter, double tempo_residuo, FILE *saida) {
 
 	///imprimindo os tempos	e tamanho da matriz
-	fprintf(saida, "sdlka");
 	fprintf(saida, "# Tempo LU: %f\n# Tempo iter: %f\n# Tempo residuo: %f\n#\n%d\n", tempo_LU, tempo_iter, tempo_residuo, n);
 
 	unsigned int iterador = 0;
 	unsigned int fim =  n*n;
 	while( iterador != fim ) {
-		fprintf(saida, "%f ", mat[iterador]);
+		fprintf(saida, "%.17g ", mat[iterador]);
 		iterador++;
 		if((iterador%n) == 0){
 			fprintf(saida, "\n");
@@ -95,7 +112,7 @@ void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double t
 }
 
 ///funcao para fazer a fatoracao LU da matriz
-double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
+double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho) {
 	//se no metodo de gauss a matriz restante tiver uma linha que tem apenas 0,
 	//entao a matriz nao eh inversivel
 	///capturando o tempo inicial
@@ -129,8 +146,8 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 		///este for faz iterar para cada linha
 		for(int k = i; k < tamanho; k++){
 			linha = k*tamanho;
-			///obtendo o fator para multiplicar a linha anterior e subtrair da 
-			///linha atual 
+			///obtendo o fator para multiplicar a linha anterior e subtrair da
+			///linha atual
 			double fator = U[linha+coluna]/pivo;
 			L[linha+coluna] = fator;
 			///este for faz a subtracao para cada el da linha
@@ -162,9 +179,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho){
 	return tempo_inicial;
 }
 
-double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho){
-	///capturando o tempo inicial
-	double tempo_inicial = timestamp();
+double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho) {
 
 	double *identidade = NULL;
 	if ( ! (identidade = (double *) malloc(tamanho*tamanho*sizeof(double))) ){
@@ -181,6 +196,9 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 			}
 		}
 	}
+
+	///capturando o tempo inicial
+	double tempo_inicial = timestamp();
 
 	///agora que temos a matriz identidade, a L e a U
 	///de forma que matriz*inversa = identidade, eh possivel
@@ -205,14 +223,14 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		///Ly = b
 
 		///este for eh para cada linha de y
-		///faz-se a substituicao 
+		///faz-se a substituicao
 		for(int j = 0; j < tamanho; j++){
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
 				for(int k = 0; k < j; k++){
 					multi = multi + L[tamanho*j+k]*y[k];
 				}
-				
+
 				//y[j] = identidade[tamanho*j+i]/L[tamanho*j+j]
 				//y[j] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]))/L[tamamnho*j+j]
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
@@ -228,13 +246,13 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		///com retrosubstituicao
 
 		///para cada linha de x, comecando de baixo pra cima
-		for(int j = (tamanho-1); j >= 0; j--){
+		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
 			multi = 0;
-			for(int k = (tamanho-1); k > j; k--){
+			for(int k = (tamanho-1); k > j; k--) {
 				multi = multi + U[tamanho*j+k]*x[k];
 			}
-			x[j] = (y[j] - multi) / U[tamanho*j+j]; 
+			x[j] = (y[j] - multi) / U[tamanho*j+j];
 
 			///colocando os resultados de x na matriz inversa
 			Inversa[tamanho*j+i] = x[j];
@@ -246,11 +264,65 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 	return tempo_inicial;
 }
 
-double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz, int iteracoes, double *tempo_iter, bool tem_saida, FILE *saida){
-	int soma;
+///funcao utilizada para resolver o sistema necessario no processo de refinamento
+void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInversa, double *R, unsigned int tamanho) {
+
+	///criando o vetor y para salvar as informacoes
+	double y[tamanho];
+	double x[tamanho];
+
+	double multi;
+
+	///este for eh para cada coluna da matriz R
+	for(int i = 0; i < tamanho; i++) {
+		///inicializando o vetor y e o vetor x
+		for(int m = 0; m < tamanho; m++){
+			y[m] = 0;
+			x[m] = 0;
+		}
+
+		///Ly = b
+
+		///este for eh para cada linha de y
+		///faz-se a substituicao
+		for(int j = 0; j < tamanho; j++){
+				///este for opera a multiplicacao entre a matriz L e o vetor y
+				multi = 0;
+				for(int k = 0; k < j; k++){
+					multi = multi + L[tamanho*j+k]*y[k];
+				}
+
+				//y[j] = identidade[tamanho*j+i]/L[tamanho*j+j]
+				//y[j] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]))/L[tamamnho*j+j]
+				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
+ 				//...
+
+				y[j] = (R[tamanho*j+i] - multi) / L[tamanho*j+j];
+		}
+
+		///Ux = y
+		///para cada linha de x, comecando de baixo pra cima
+		for(int j = (tamanho-1); j >= 0; j--) {
+			///este for opera a multiplicacao entre U e x
+			multi = 0;
+			for(int k = (tamanho-1); k > j; k--) {
+				multi = multi + U[tamanho*j+k]*x[k];
+			}
+			x[j] = (y[j] - multi) / U[tamanho*j+j];
+
+			///colocando os resultados de x na matriz DiferencaInversa
+			DiferencaInversa[tamanho*j+i] = x[j];
+		}
+	}
+}
+
+double refinamento(double *matriz, double *L, double *U, double *Inversa, unsigned int tamanho_matriz, int iteracoes) {
+double tempo_medio;
+for (int it = 1; it <= iteracoes; it++) {
+	double soma;
 	///tempo medio para calcular a norma do residuo
-	double tempo_medio;
-	///R = I - A*inv(A)
+
+	///R = I - I_aprox
 	double *R = NULL;
 	///I_aprox = matriz * Inversa
 	double *I_aprox = NULL;
@@ -273,7 +345,7 @@ double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz,
 
 	///calculando I_aprox
 	for(int i = 0; i < tamanho_matriz; i++) {
-		for(int j = 0; j < tamanho_matriz; j++) {		
+		for(int j = 0; j < tamanho_matriz; j++) {
 		    soma = 0;
 		    for(int k = 0; k < tamanho_matriz; k++) {
 				soma = soma + matriz[(i*tamanho_matriz) + k] * Inversa[(k*tamanho_matriz) + j];
@@ -299,136 +371,152 @@ double refinamento(double *matriz, double *Inversa, unsigned int tamanho_matriz,
 		}
 	}
 
-	//imprimeMatriz(R, tamanho_matriz, 0, 0, 0);
+	///calculando norma de R
+	double sum = 0;
+	double norma = 0;
+	for(int i = 0; i < tamanho_matriz*tamanho_matriz; i++) {
+		sum = sum + (R[i] * R[i]);
+	}
 
-	///calcular norma de R
-	///imprimir a norma de R na iteração
-	///
+	norma = sqrt(sum);
+	printf("# Norma: %.17g\n", norma);
 
-	///TODO FAZER O REFINAMENTO AQUI
-	///Para o refinamento temos que: matriz*Inversa Alterada(iter x) = Identidade Alterada(iter x)
-	///Entao, para cada coluna da Inversa e da Identidade é preciso fazer um refinamento 
-	///
+	double *DiferencaInversa = NULL;
+	if ( ! (DiferencaInversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
+		exit(0);
+	}
+
+	retrosubstituicao_refinamento(L, U, DiferencaInversa, R, tamanho_matriz);
+
+	///soma o resultado do processo de refinamento na Inversa
+	for(int i = 0; i < tamanho_matriz; i++){
+		for(int j = 0; j < tamanho_matriz; j++){
+			Inversa[(i*tamanho_matriz) + j] = Inversa[(i*tamanho_matriz) + j] + DiferencaInversa[(i*tamanho_matriz) + j];
+		}
+	}
+
 	///TODO Inclui o tempo de somar o resultado do refinamento à solução original no tempo_iter
-
+}
 	return tempo_medio;
 }
 
 ///INICIO DO PROGRAMA PRINCIPAL
 int main(int argc, char *argv[]){
 
-///inicializando a seed de randomizacao
-srand( 20172 );
+	///inicializando a seed de randomizacao
+	srand( 20172 );
 
-///apontadores para arquivos de entrada/saida
-FILE *entrada;
-FILE *saida;
+	///apontadores para arquivos de entrada/saida
+	FILE *entrada;
+	FILE *saida;
 
-bool tem_entrada = false;
-bool tem_saida = false;
-bool tem_iteracoes = false;
-bool eh_randomica = false;
+	bool tem_entrada = false;
+	bool tem_saida = false;
+	bool tem_iteracoes = false;
+	bool eh_randomica = false;
 
-int iteracoes = 0;
-unsigned int tamanho_matriz = 0;
+	int iteracoes = 0;
+	unsigned int tamanho_matriz = 0;
 
-///a matriz na realidade sera um vetor onde o primeiro elemento
-///fica na posicao 0 e o primeiro elemento da segunda linha
-///fica na posicao n
-double *matriz = NULL;
+	///a matriz na realidade sera um vetor onde o primeiro elemento
+	///fica na posicao 0 e o primeiro elemento da segunda linha
+	///fica na posicao n
+	double *matriz = NULL;
 
-///esse for localiza os parametros passados para o argv 
-///e faz as operacoes devidas de acordo com o parametro;
-for(int i =0; i < argc; i++){
-	if(strcmp(argv[i], "-e") == 0){
-		///ler arquivo de entrada
-		tem_entrada = true;
-		entrada = fopen(argv[i+1], "r");
-		if (entrada == NULL) {
-			perror("Erro ao abrir o arquivo de entrada");
-     		}
-	}
-	else if(strcmp(argv[i], "-o") == 0){
-		///escrever no arquivo de saida
-		tem_saida = true;
-		saida = fopen(argv[i+1], "w");
-		if (saida == NULL) {
-			perror("Erro ao abrir o arquivo de saida");
+	///esse for localiza os parametros passados para o argv
+	///e faz as operacoes devidas de acordo com o parametro;
+	for(int i =0; i < argc; i++){
+		if(strcmp(argv[i], "-e") == 0){
+			///ler arquivo de entrada
+			tem_entrada = true;
+			entrada = fopen(argv[i+1], "r");
+			if (entrada == NULL) {
+				perror("Erro ao abrir o arquivo de entrada");
+	     		}
+		}
+		else if(strcmp(argv[i], "-o") == 0){
+			///escrever no arquivo de saida
+			tem_saida = true;
+			saida = fopen(argv[i+1], "w");
+			if (saida == NULL) {
+				perror("Erro ao abrir o arquivo de saida");
+			}
+		}
+		else if(strcmp(argv[i],"-r") == 0){
+			///gerar matriz eleatoriamente
+			eh_randomica = true;
+			tamanho_matriz = atoi(argv[i+1]);
+			matriz = generateSquareRandomMatrix(tamanho_matriz);
+			//descomentar a linha de baixo para ver a matriz eleatoria criada
+			//imprimeMatriz(matriz, tamanho_matriz,0,0,0);
+		}
+		else if(strcmp(argv[i], "-i") == 0){
+			///numero de iteracoes do refinamento
+			tem_iteracoes = true;
+			iteracoes = atoi(argv[i+1]);
 		}
 	}
-	else if(strcmp(argv[i],"-r") == 0){
-		///gerar matriz eleatoriamente
-		eh_randomica = true;
-		tamanho_matriz = atoi(argv[i+1]);
-		matriz = generateSquareRandomMatrix(tamanho_matriz);
-		//descomentar a linha de baixo para ver a matriz eleatoria criada
-		//imprimeMatriz(matriz, tamanho_matriz);
+
+	///checando o parametro obrigatorio
+	if(!tem_iteracoes){
+		printf("Erro: O parametro -i k eh obrigatorio\n");
+		printf("O formato da chamada eh:\ninvmat [-e arquivo_entrada] [-o arquivo_saida] [-r N] -i k\n");
+		exit(0);
 	}
-	else if(strcmp(argv[i], "-i") == 0){
-		///numero de iteracoes do refinamento
-		tem_iteracoes = true;
-		iteracoes = atoi(argv[i+1]);
+
+	///lendo a matriz do arquivo de entrada
+	if(tem_entrada && (!eh_randomica)){
+		matriz = leMatriz(entrada, &tamanho_matriz);
+	} else if ((!tem_entrada) && (!eh_randomica)) {
+		matriz = leMatrizStdin(&tamanho_matriz);
 	}
-}
 
-///checando o parametro obrigatorio
-if(!tem_iteracoes){
-	printf("Erro: O parametro -i k eh obrigatorio\n");
-	printf("O formato da chamada eh:\ninvmat [-e arquivo_entrada] [-o arquivo_saida] [-r N] -i k\n");
-	exit(0);
-}
+	///fazendo a fatoracao L U
+	double *L = NULL;
+	double *U = NULL;
+	if ( ! (L = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
+		exit(0);
+	}
+	if ( ! (U = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz U, terminando o programa.\n");
+		exit(0);
+	}
 
-///lendo a matriz do arquivo de entrada
-if(tem_entrada && (!eh_randomica)){
-	matriz = leMatriz(entrada, &tamanho_matriz);
-}
+	double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz);
+	///testa se inversivel
+	if(tempo_LU == -1){
+		printf("Erro: a matriz nao eh inversivel\n");
+		exit(1);
+	}
 
-///fazendo a fatoracao L U
-double *L = NULL;
-double *U = NULL;
-if ( ! (L = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
-	printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
-	exit(0);
-}
-if ( ! (U = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
-	printf("Erro: afalha na alocacao da matriz U, terminando o programa.\n");
-	exit(0);
-}
+	double *Inversa = NULL;
+	if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
+		exit(0);
+	}
 
-double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz);
-///testa se inversivel
-if(tempo_LU == -1){
-	printf("Erro: a matriz nao eh inversivel\n");
-	exit(1);
-}
+	double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
 
-double *Inversa = NULL;
-if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
-	printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
-	exit(0);
-}
+	///chamando a funcao de refinamento
+	double tempo_residuo = refinamento(matriz, L, U, Inversa, tamanho_matriz, iteracoes);
 
-double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
+	///TODO: testar se os prints estao de acordo com a especificacao
+	if(tem_saida){
+		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
+	}
+	else{
+		imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
+	}
 
-///chamando a funcao de refinamento 
-double tempo_residuo = refinamento(matriz, Inversa, tamanho_matriz, iteracoes, &tempo_iter, tem_saida, saida);
+	///TODO: arrumar o Makefile para rodar o doxygen
 
-///TODO: testar se os prints estao de acordo com a especificacao
-if(tem_saida){
-	imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
-}
-else{
-	imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
-}
-
-///TODO: arrumar o Makefile para rodar o doxygen
-
-///fechando os arquivos 
-if(entrada != NULL){
-	fclose(entrada);
-}
-if(saida != NULL){
-	fclose(saida);
-}
-
+	///fechando os arquivos
+	if(entrada != NULL){
+		fclose(entrada);
+	}
+	if(saida != NULL){
+		fclose(saida);
+	}
 }

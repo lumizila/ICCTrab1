@@ -1,5 +1,5 @@
 all: main.c
-	gcc main.c -o invmat
+	gcc main.c -o invmat -lm 
 
 doc: 
 	cd doc; doxygen; cd ..
