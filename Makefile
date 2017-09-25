@@ -2,7 +2,7 @@ all: main.c
 	gcc main.c -o invmat -lm -Wall
 
 doc: 
-	cd doc; doxygen; cd ..
+	doxygen; 
 
 clean:
-	rm invmat; rm -r "doc/html"
+	rm invmat; rm -r "html"

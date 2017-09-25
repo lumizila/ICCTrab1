@@ -1,3 +1,7 @@
+///Os membros do grupo são: 
+///Luiza Culau - GRR20141014
+///Adolfo Tognetti - GRR20152278
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -145,9 +149,6 @@ void trocaLinhas(double *matriz, unsigned int tamanho, int linha1, int linha2) {
 
 ///funcao para fazer a fatoracao LU da matriz
 double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, unsigned int tamanho) {
-	//se no metodo de gauss a matriz restante tiver uma linha que tem apenas 0,
-	//entao a matriz nao eh inversivel
-
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 
@@ -203,10 +204,11 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 		///este for faz iterar para cada linha
 		for(int k = i; k < tamanho; k++){
 			linha = k*tamanho;
-			///obtendo o fator para multiplicar a linha anterior e subtrair da
-			///linha atual
+
+			///obtendo o fator para multiplicar a linha anterior e subtrair da linha atual
 			double fator = U[linha+coluna]/pivo;
 			L[linha+coluna] = fator;
+
 			///este for faz a subtracao para cada el da linha
 			for(int j = 0; j < tamanho; j++){
 				U[linha+j] = U[linha+j]-(U[tamanho*pivo_posicao+j]*fator);
@@ -223,6 +225,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 	return tempo_inicial;
 }
 
+///Funcao que calcula os valores da matriz Inversa atraves da retrosubstituicao
 double retrosubstituicao(double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho) {
 
 	///capturando o tempo inicial
@@ -249,7 +252,6 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		}
 
 		///Ly = b
-
 		///este for eh para cada linha de y
 		///faz-se a substituicao
 		for(int j = 0; j < tamanho; j++){
@@ -259,8 +261,6 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 					multi = multi + L[tamanho*j+k]*y[k];
 				}
 
-				//y[j] = identidade[tamanho*j+i]/L[tamanho*j+j]
-				//y[j] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]))/L[tamamnho*j+j]
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
 
@@ -268,7 +268,6 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		}
 
 		///Ux = y
-
 		///agora que tenho o valor de y referente a coluna i da identidade,
 		///eh possivel calcular o vetor x referente a coluna i da identidade
 		///com retrosubstituicao
@@ -336,6 +335,7 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 	}
 }
 
+///Funcao que melhora os resultados obtidos anteriormente para a matriz Inversa, atraves do metodo de refinamento
 double refinamento(double *matriz, double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
 	double tempo_total = 0;
 	double soma_tempo = 0;
@@ -512,9 +512,8 @@ int main(int argc, char *argv[]){
 	///gera matriz identidade
 	identidade = geraMatrizIdentidade(tamanho_matriz);
 
-	//imprimeMatriz(matriz, tamanho_matriz,0,0,0);
 	double tempo_LU = fatoracaoLU(L, U, matriz, identidade, tamanho_matriz);
-	//imprimeMatriz(U, tamanho_matriz,0,0,0);
+	
 	///testa se inversivel
 	if(tempo_LU == -1){
 		printf("Erro: a matriz nao eh inversivel\n");
@@ -526,7 +525,8 @@ int main(int argc, char *argv[]){
 		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
 		exit(0);
 	}
-
+	
+	///faz a retrosubstituicao
 	double tempo_iter = retrosubstituicao(L, U, Inversa, identidade, tamanho_matriz);
 
 	if (tem_saida) {
@@ -540,15 +540,12 @@ int main(int argc, char *argv[]){
 		tempo_residuo = refinamento(matriz, L, U, Inversa, identidade, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
 	}
 
-	///TODO: testar se os prints estao de acordo com a especificacao
 	if(tem_saida){
 		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
 	}
 	else{
 		imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
 	}
-
-	///TODO: arrumar o Makefile para rodar o doxygen
 
 	///fechando os arquivos
 	if(tem_entrada == true){
