@@ -132,8 +132,19 @@ void imprimeMatrizArquivo(double *mat, unsigned int n, double tempo_LU, double t
 	}
 }
 
+///funcao para trocar linhas de uma matriz
+void trocaLinhas(double *matriz, unsigned int tamanho, int linha1, int linha2) {
+	double aux;
+
+	for(int i = 0; i < tamanho; i++) {
+		aux = matriz[(linha1*tamanho) + i];
+		matriz[(linha1*tamanho) + i] = matriz[(linha2*tamanho) + i];
+		matriz[(linha2*tamanho) + i] = aux;
+	}
+}
+
 ///funcao para fazer a fatoracao LU da matriz
-double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho) {
+double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, unsigned int tamanho) {
 	//se no metodo de gauss a matriz restante tiver uma linha que tem apenas 0,
 	//entao a matriz nao eh inversivel
 
@@ -156,16 +167,39 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho) {
 	double pivo;
 	int linha;
 	int coluna;
+	bool teve_troca;
 
 	///este for faz iterar para cada coluna
-	for(int i = 1; i < tamanho; i++){
+	for(int i = 1; i < tamanho; i++) {
 		pivo_posicao = i-1;
 		coluna = i-1;
 		pivo = U[tamanho*pivo_posicao+pivo_posicao];
-		///testando se o pivo corrente eh igual a 0, se sim, a matriz nao eh inversivel
-		if(pivo == 0){
+		teve_troca = false;
+
+		///guarda em qual linha esta o maior pivo
+		int maior = pivo_posicao;
+
+		///procurando o maior elemento em modulo da coluna para ser pivo
+		for (int p = pivo_posicao + 1; p < tamanho; p++) {
+			if (fabs(U[tamanho*p+pivo_posicao]) > fabs(U[tamanho*maior+pivo_posicao])) {
+				maior = p;
+				teve_troca = true;
+			}
+		}
+
+		if (teve_troca) {
+			trocaLinhas(U, tamanho, pivo_posicao, maior);
+			trocaLinhas(identidade, tamanho, pivo_posicao, maior);
+			trocaLinhas(matriz, tamanho, pivo_posicao, maior);
+			pivo = U[tamanho*pivo_posicao+pivo_posicao];
+
+		}
+
+		///caso o pivo seja 0 a matriz nao tem inversa
+		if (pivo == 0) {
 			return -1;
 		}
+
 		///este for faz iterar para cada linha
 		for(int k = i; k < tamanho; k++){
 			linha = k*tamanho;
@@ -180,21 +214,8 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho) {
 		}
 	}
 
-	///testando se a matriz U ficou com alguma linha que eh apenas 0,
-	///entao a matriz nao eh inversivel e devemos sair do programa
-	bool linha_nula = true;
-	for(int linha = 0; linha < tamanho; linha++){
-		linha_nula = true;
-		for(int coluna = 0; coluna < tamanho; coluna++){
-			if(U[linha*tamanho+coluna] != 0){
-				linha_nula = false;
-			}
-		}
-		///se a boolean que indica se a linha eh nula tem valor verdadeiro
-		///significa que a matriz na eh inversivel
-		if(linha_nula){
-			return -1;
-		}
+	if(U[(tamanho*tamanho)-1] == 0) {
+		return -1;
 	}
 
 	///capturando variacao de tempo
@@ -369,7 +390,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 		soma_tempo = soma_tempo + tempo_total;
 
 		norma = sqrt(sum);
-		
+
 		if (tem_saida) {
 			fprintf(saida, "# iter %d: %.17g\n", it, norma);
 		} else {
@@ -420,6 +441,7 @@ int main(int argc, char *argv[]){
 	bool eh_randomica = false;
 	int iteracoes = 0;
 	unsigned int tamanho_matriz = 0;
+	double tempo_residuo = 0;
 
 	///a matriz na realidade sera um vetor onde o primeiro elemento
 	///fica na posicao 0 e o primeiro elemento da segunda linha
@@ -487,8 +509,12 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 
-	double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz);
+	///gera matriz identidade
+	identidade = geraMatrizIdentidade(tamanho_matriz);
 
+	//imprimeMatriz(matriz, tamanho_matriz,0,0,0);
+	double tempo_LU = fatoracaoLU(L, U, matriz, identidade, tamanho_matriz);
+	//imprimeMatriz(U, tamanho_matriz,0,0,0);
 	///testa se inversivel
 	if(tempo_LU == -1){
 		printf("Erro: a matriz nao eh inversivel\n");
@@ -501,9 +527,6 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 
-	///gera matriz identidade
-	identidade = geraMatrizIdentidade(tamanho_matriz);
-
 	double tempo_iter = retrosubstituicao(L, U, Inversa, identidade, tamanho_matriz);
 
 	if (tem_saida) {
@@ -513,7 +536,9 @@ int main(int argc, char *argv[]){
 	}
 
 	///chamando a funcao de refinamento
-	double tempo_residuo = refinamento(matriz, L, U, Inversa, identidade, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
+	if (iteracoes > 0) {
+		tempo_residuo = refinamento(matriz, L, U, Inversa, identidade, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
+	}
 
 	///TODO: testar se os prints estao de acordo com a especificacao
 	if(tem_saida){
